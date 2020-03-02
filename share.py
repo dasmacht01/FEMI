@@ -1,6 +1,10 @@
 from telegram import (InlineKeyboardButton, InlineKeyboardMarkup)
 
+# "inline_keyboard" in a convinient function that
+# convert List[List[Tuple[Any, Any]]] to InlineKeyboardMarkup object
+# you can see how to use it in lrh.py
 def inline_keyboard(primative_buttons):
+    """ a convenient function which help to write an InlineKeyboardMarkup object """
     buttons = [[InlineKeyboardButton(button[0], callback_data=button[1]) for button in row]
                for row in primative_buttons]
     return InlineKeyboardMarkup(buttons)
