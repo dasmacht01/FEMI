@@ -8,7 +8,7 @@ bot= telegram.Bot(token='963449057:AAHIO6AWfT9SoM6davoXBr2Y1TdRd9eROnQ')
 START_OVER = False
 cart=[{'name': 'yolo', 'sugar': '25', 'ice': 'no', 'topping': 'no'}]
 price_dict= {'yolo': 10}
-context.user_data['personal_file']= "SUTD"
+# context.user_data['personal_file']= "SUTD"
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
