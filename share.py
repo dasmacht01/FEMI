@@ -1,6 +1,9 @@
 # can use html
 # can elaborate with 'typing' status
 
+current_item = None
+cart = []
+
 
 def menu_construct(categories):
     for subcategory in categories:
@@ -15,22 +18,19 @@ def inline_keyboard(primative_buttons):
 
 
 class Tea: # edited
-    def __init__(self, name=None, price=None, sugar=None, ice=None, toppings=None): #toppings type? default level?
+    def __init__(self, name, sugar=50, ice=50, toppings=[]): # toppings is a list
         self.name = name
-        self.price = price
         self.sugar = sugar
         self.ice = ice
         self.toppings = toppings
+        self.price = price_dict[self.name]
 
     def __repr__(self):
-        text = f'{self.name}:\n'\
-               f'sugar level: {self.sugar}; ice level: {self.ice}; '\
-               f'Toppings: {", ".join(self.toppings) if self.toppings else "None"}'
+        text = f'{self.name}:\nsugar: {self.sugar}, ice: {self.ice};'
+        if self.toppings:
+            text += f'\n{", ".join(self.toppings)}'
         return text
 
-
-current_item = None
-cart = []
 
 # ---Tea Menu--- #
 categories = ['YOLO', 'Fruits_burst', 'Flavoured_tea', 'Cheezy', 'Diet_tea']
