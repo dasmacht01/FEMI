@@ -14,7 +14,7 @@ def reply(update, context):
 
 
 def main():
-    updater = Updater("1121470779:AAG5F0CaZAcU9oQW34lXVzTrKMgZGoyDtNg", use_context=True)
+    updater = Updater("TOKEN", use_context=True)
     dp = updater.dispatcher
     dp.add_handler(MessageHandler(Filters.text, reply))
     updater.start_polling()
