@@ -3,12 +3,28 @@ import telegram
 from telegram import (InlineKeyboardMarkup, InlineKeyboardButton)
 from telegram.ext import (Updater, CommandHandler, ConversationHandler, CallbackQueryHandler, MessageHandler, Filters)
 
+
+class Tea:
+    def __init__(self, name, sugar=50, ice=50, toppings=[]): # toppings is a list
+        self.name = name
+        self.sugar = sugar
+        self.ice = ice
+        self.toppings = toppings
+        # self.price = price_dict[self.name]
+
+    def __repr__(self):
+        text = f'{self.name}:\nsugar: {self.sugar}, ice: {self.ice};'
+        if self.toppings:
+            text += f'\n{", ".join(self.toppings)}'
+        return text
+
+
 # Test
 bot= telegram.Bot(token='963449057:AAHIO6AWfT9SoM6davoXBr2Y1TdRd9eROnQ')
 START_OVER = False
-cart=[{'name': 'yolo', 'sugar': '25', 'ice': 'no', 'topping': 'no'}]
+cart = [Tea(name='yolo', sugar=25, ice='no', toppings='no')]
 price_dict= {'yolo': 10}
-# context.user_data['personal_file']= "SUTD"
+#context.user_data['personal_file']= "SUTD"
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -67,14 +83,14 @@ def save_address(update, context):
 def confirm_bill(update, context):
     tot=0
     for product in cart:
-        tot+=price_dict[product['name']]
+        tot+=price_dict[product.name]
     text= 'This is your order information! \n'\
           'Please check your order and address.\n'\
           "If all is right, just click 'confirm' to complete your payment.\n"\
           "Otherwise, click 'back' to edit your order.\n \n"
     for product in cart:
-        text += '{0}: \n'.format(product['name'])
-        text += '(Ice Level: {0}, Sugar Level: {1}, Toppings: {2})\n'.format(product['sugar'], product['ice'], product['topping'])
+        text += '{0}: \n'.format(product.name)
+        text += '(Ice Level: {0}, Sugar Level: {1}, Toppings: {2})\n'.format(product.sugar, product.ice, product.toppings)
     text += '\n Total: {0} \n'. format(tot)
     text += '\n Address and Contact number: {0}'.format(context.user_data['personal_file'])
     buttons=[[InlineKeyboardButton(text='Confirm', callback_data='Confirm'),
