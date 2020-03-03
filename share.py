@@ -74,7 +74,7 @@ product_dict = {category: eval(category) for category in categories}
 # ---Price--- #
 '''import random
 for sub in product_dict:
-    price_dict.update(temp := {tea: random.randint(5,15) for tea in eval(sub)})'''
+    price_dict.update({tea: random.randint(5,15) for tea in eval(sub)})'''
 
 price_dict = {'Black Sugar Fresh Milk': 13,
  'Cheezy Jasmine': 15,
