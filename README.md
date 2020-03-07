@@ -1,6 +1,6 @@
 # FEMI
 
-### This project is a telegram bot that can offer a take-out service of the FEMI's
+### This project is a telegram bot that can offer a FEMI's take-out service.
 
 #### There are roughly eight interfaces:
 
@@ -12,3 +12,4 @@
 - address(total_and_address)
 - before-pay confirmation(before_pay)
 - pay
+
