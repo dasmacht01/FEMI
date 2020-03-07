@@ -13,7 +13,6 @@ function_list = ['start', 'start_over', 'select_tea', 'select_sugar',
 
 token = '1143279358:AAGByHHawmnMrFd7Sdwsvl4tDTDLgUkpWJU'
 bot = Bot(token=token)
-current_item = None
 cart = []
 
 
@@ -75,12 +74,12 @@ def send_message(update, text, reply_markup=None, **kwargs):
 
 
 class Tea:  # simplified version
-    def __init__(self, name, sugar=50, ice=50, toppings=[]):  # toppings is a list!
+    def __init__(self, name, sugar=50, ice=50):  # toppings is a list!
         self.name = name
         self.sugar = sugar
         self.ice = ice
-        self.toppings = toppings
         self.price = price_dict[self.name]
+        self.toppings = []
 
     def __repr__(self):
         text = f'{self.name}:\nsugar: {self.sugar}, ice: {self.ice};'

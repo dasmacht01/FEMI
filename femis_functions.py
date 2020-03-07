@@ -71,9 +71,11 @@ def select_sugar(update, context):
     """ function asking for sugar level """
 
     # create current_item object due to the tea the user chose
-    global current_item
-    current_item = Tea(name=update.callback_query.data[5:])
-    logger.info(f'{current_item.name} is selected.')
+    if context.user_data.get('current_item'):
+        del context.user_data['current_item']
+    context.user_data['current_item'] = Tea(name=update.callback_query.data[5:])
+    current_item = context.user_data['current_item']
+    logger.info(f'{current_item} is selected.')
 
     # send message for user to choose sugar level
     text = f'You have chosen {current_item.name}, please customize your product.\n' \
@@ -92,6 +94,7 @@ def select_sugar(update, context):
 def select_ice(update, context):
     """ function to ask for ice level """
 
+    current_item = context.user_data['current_item']
     # record sugar level to current_item object
     current_item.sugar = int(update.callback_query.data[6:])
     logger.info(f'sugar level: {current_item.sugar}')
@@ -116,6 +119,7 @@ def select_toppings(update, context):
     # record ice level to current_item object
     # or append topping to topping list
     data: str = update.callback_query.data
+    current_item = context.user_data["current_item"]
     if data.startswith('ice-'):
         current_item.ice = data[4:]
         logger.info(f'ice level: {current_item.ice}')
@@ -126,8 +130,9 @@ def select_toppings(update, context):
     text = 'choose some toppings if you want.'
     if added_toppings := current_item.toppings:
         text += '\nYou have chosen the following topping(s):\n'
-        text += '\n'.join([f'{i + 1}: {topping}'
-                           for i, topping in enumerate(added_toppings)])
+        text += '\n'.join(
+            [f'{i + 1}: {topping}'for i, topping in enumerate(added_toppings)]
+        )
 
     buttons = [[(topping, 'topping-' + topping)] for topping in toppings]
     buttons.append([('That\'s all', 'back-6')])
@@ -137,6 +142,7 @@ def select_toppings(update, context):
 
 # 6. ---------so_far--------
 def so_far(update, context):  # not sure what args to pass here
+    current_item = context.user_data['current_item']
     cart.append(current_item)
     text = "Tea added! \n"\
            "Let's see what's already in your cart now:"
