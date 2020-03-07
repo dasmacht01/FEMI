@@ -1,6 +1,17 @@
 from share import *
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import time
+import logging
+from io import BytesIO
+
+text = 'Here are your orders.\n' 'Tap any selection if you want to cancel it.\n'
+# Enable logging
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
+
 
 # 0. -------start--------
 def start(update, context):
@@ -16,12 +27,14 @@ def start(update, context):
 
     keyboard = InlineKeyboardMarkup(buttons)
     update.message.reply_text(text=text_start_1)
-    with open('https://github.com/Lynn-020809/FEMI/blob/master/IMG_2521.JPG', 'rb') as f:
-        bot.send_photo(chat_id=update.effective_chat.id, photo=f, timeout=50)
-    with open('https://github.com/Lynn-020809/FEMI/blob/master/IMG_2522.JPG', 'rb') as p:
-        bot.send_photo(chat_id=update.effective_chat.id, photo=p, timeout=50)
-    update.message.reply_text(text=text_start_2, reply_markup=keyboard)
 
+    with open('1.jpg', 'rb') as f:
+        bot.send_photo(chat_id=update.effective_chat.id, photo=f, timeout=50)
+    with open('2.jpg', 'rb') as p:
+        bot.send_photo(chat_id=update.effective_chat.id, photo=p, timeout=50)
+
+    update.message.reply_text(text=text_start_2, reply_markup=keyboard)
+    return 'SELECT_TEA'
 
 # 1. ---------start_over----------
 def start_over(update, context):
@@ -47,7 +60,7 @@ def select_tea(update, context):
     """ show teas of the catagory user chose """
     # subcategory = product_dict[update.callback_query.data]
     # use in test
-    subcategory = 'YOLO'
+    subcategory = update.callback_query.data
     buttons = [[(tea, 'name-' + tea)] for tea in product_dict[subcategory]]
     send_message(update, 'Choose what you want to drink:',
                  reply_markup=inline_keyboard(buttons))
@@ -107,27 +120,35 @@ def select_toppings(update, context):
         current_item.ice = data[4:]
         logger.info(f'ice level: {current_item.ice}')
     elif data.startswith('topping-'):
-        current_item.toppings.append(data)
+        current_item.toppings.append(data[8:])
 
     # send message for user to choose toppings
     text = 'choose some toppings if you want.'
     if added_toppings := current_item.toppings:
-        text += '\nYou have chosen the following topping(s)'
-        text += '\n'.join([f'{i + 1}: {topping}' for i, topping in added_toppings])
+        text += '\nYou have chosen the following topping(s):\n'
+        text += '\n'.join([f'{i + 1}: {topping}'
+                           for i, topping in enumerate(added_toppings)])
 
     buttons = [[(topping, 'topping-' + topping)] for topping in toppings]
+    buttons.append([('That\'s all', 'back-6')])
 
-    send_message(update, text, inline_keyboard(buttons, footer_button=('back', 'back')))
+    send_message(update, text, inline_keyboard(buttons))
 
 
 # 6. ---------so_far--------
 def so_far(update, context):  # not sure what args to pass here
+    cart.append(current_item)
     text = "Tea added! \n"\
-                  "Let's see what's already in your cart now:"
+           "Let's see what's already in your cart now:"
     for i in range(len(cart)):
         text += f'{i + 1}. {cart[i]}\n'  # can use html
-    buttons = [[('place order', 's_place_order')], [('continue buying', 's_continue_buying')]]
-    update.message.reply_message(text, reply_markup=inline_keyboard(buttons))
+    buttons = [
+        [('place order', 'back-7')],
+        [('continue buying', 'back-1')]
+    ]
+    update.callback_query.edit_message_text(
+        text, reply_markup=inline_keyboard(buttons)
+    )
 
 
 # 7. --------view_cart----------
@@ -135,48 +156,50 @@ def make_order_keyboard(list_):  # return a reply markup
     buttons = []
     for i in range(len(list_)):
         buttons.append([(f'{i + 1}. ' + str(list_[i]), str(i))])
-    buttons.append([('set order', str(i + 1))]) # will raise IndexError
+    buttons.append([('set order', 'back-9')])
     return buttons
 
 def view_cart(update, context):
     text = 'Here are your orders.\n' 'Tap any selection if you want to cancel it.\n'
-    chat_id = update.message.chat_id
-    update.message.reply_text(text, reply_markup=inline_keyboard(make_order_keyboard(cart)))
+    # chat_id = update.message.chat_id
+    update.callback_query.edit_message_text(
+        text, reply_markup=inline_keyboard(make_order_keyboard(cart)))
+    return 'EDIT_ORDER'
 
-
-# 8. -------delet----------
+# 8. -------delete----------
 def delete(update, context):
+
     #print(update)
     global text
     choice = int(update.callback_query.data)
-    try:
-        # why I have to define text here again??
-        text = 'You have deleted ' + str(cart.pop(choice).name) + '\n' + text
-        #text = 'You have deleted ' + str(cart.pop(choice).name) + '\n' + \
-         #      'Here are your orders.\n' + 'Tap any selection if you want to cancel it.\n'
-        #update.callback_query.reply_action('typing')
-        time.sleep(1)
-        update.callback_query.edit_message_text(text)
-        if cart:
-            #update.callback_query.reply_action('typing')
-            time.sleep(1)
-            update.callback_query.edit_message_reply_markup(reply_markup=inline_keyboard(make_order_keyboard(cart)))
-        else:
-            update.callback_query.edit_message_text('Your cart is emtpy now!\nTap "back" to return to home page.')
-            time.sleep(1)
-            update.callback_query.edit_message_reply_markup(reply_markup=inline_keyboard([[('back', 'back')]]))
-    except IndexError:
-        # go to total_and_address page
-        update.callback_query.reply_text('got to total_and_address page')
+    text = 'You have deleted ' + str(cart.pop(choice).name) + '\n' + text
+    # text = 'You have deleted ' + str(cart.pop(choice).name) + '\n' + \
+    #      'Here are your orders.\n' + 'Tap any selection if you want to cancel it.\n'
+    # update.callback_query.reply_action('typing')
+    # time.sleep(1)
+    update.callback_query.edit_message_text(text)
+    if cart:
+        # update.callback_query.reply_action('typing')
+        # time.sleep(1)
+        update.callback_query.edit_message_reply_markup(
+            reply_markup=inline_keyboard(make_order_keyboard(cart)))
+    else:
+        update.callback_query.edit_message_text('Your cart is emtpy now!\n'
+                                                'Tap "back" to return to home page.')
+        # time.sleep(1)
+        update.callback_query.edit_message_reply_markup(
+            reply_markup=inline_keyboard([[('back', 'back-1')]]))
 
 
 # 9. ------------ask_address----------
 def ask_address(update, context):
-    text = "Since you have confirmed your order, could you tell me your address and contact number?"
+    text = "Since you have confirmed your order, " \
+           "could you tell me your address and contact number?"
     try:
         update.callback_query.edit_message_text(text=text)
-    except:
+    except AttributeError:
         update.message.reply_text(text=text)
+    return 'ADDRESS'
 
 
 # 10. ---------save_address--------
@@ -185,6 +208,7 @@ def save_address(update, context):
     logger.info("address and contact number: {} ".format(context.user_data['personal_file']))
     update.message.reply_text('Ok I see!\n'\
                               'We will contact you by: {0}'.format(context.user_data['personal_file']))
+    return confirm_bill(update, context)
 
 
 # 11. --------confirm_bill----------
@@ -202,14 +226,14 @@ def confirm_bill(update, context):
     text += '\n Total: {0} \n'. format(tot)
     text += '\n Address and Contact number: {0}'.format(context.user_data['personal_file'])
     buttons=[[InlineKeyboardButton(text='Confirm', callback_data='Confirm'),
-              InlineKeyboardButton(text='Back', callback_data='Back')]]
+              InlineKeyboardButton(text='Back', callback_data='back-7')]]
     keyboard= InlineKeyboardMarkup(buttons)
     update.message.reply_text(text=text, reply_markup=keyboard)
 
 
 def back(update, context):
-    number = callback_data[5:]
-    function_list[number]
+    number = int(update.callback_query.data[5:])
+    return eval(function_list[number])(update, context)
 
 
 def cancel(update, context):

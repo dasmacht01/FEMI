@@ -1,15 +1,9 @@
 # can use html
 # can elaborate with 'typing' status
 
-from telegram import (InlineKeyboardButton, InlineKeyboardMarkup)
+from telegram import (InlineKeyboardButton, InlineKeyboardMarkup, Bot)
+from itertools import chain
 
-__all__ = [
-    'Tea', 'current_item', 
-    'cart', 'inline_keyboard', 
-    'send_message', 'product_dict', 
-    'price_dict', 'toppings',
-    'funtion_list',
-]
 
 function_list = ['start', 'start_over', 'select_tea', 'select_sugar',
                  'select_ice', 'select_toppings', 'so_far', 'view_cart',
@@ -17,34 +11,54 @@ function_list = ['start', 'start_over', 'select_tea', 'select_sugar',
                  'pay']
 
 
-    # -------start --------- 0
-    # -----start_over ------ 1
-    # -----select_tea ------ 2
-    # ----select_sugar ----- 3
-    # -----select_ice ------ 4
-    # --select_toppings ---- 5
-    # -------so_far -------- 6
-    # -----view_cart ------- 7
-    # -------delete -------- 8
-    # ----ask_address ------ 9
-    # ----save_address ----- 10
-    # ----confirm_bill ----- 11
-    # --------pay ---------- 
-
-
+token = '1143279358:AAGByHHawmnMrFd7Sdwsvl4tDTDLgUkpWJU'
+bot = Bot(token=token)
 current_item = None
 cart = []
 
 
-def inline_keyboard(primative_buttons):
+def inline_keyboard(primative_buttons,
+                    n_cols=None,
+                    header_button=None,
+                    footer_button=None):
     """ 'inline_keyboard' is a convinient function
-         to write InlineKeyboardMarkup object """
+             to write InlineKeyboardMarkup object """
+    if n_cols:
+        temp = list()
+        for row in primative_buttons:
+            if type(row) is list:
+                temp.extend(row)
+            elif type(row) is tuple:
+                temp.append(row)
+        temp = [temp[i:i+n_cols] for i in range(0, len(temp), n_cols)]
+        primative_buttons = temp
+        del temp
+
     buttons = [[InlineKeyboardButton(button[0], callback_data=button[1]) for button in row]
                for row in primative_buttons]
+
+    header_type = type(header_button)
+    if header_type is tuple:
+        buttons.insert([header_button])
+    elif header_type is list:
+        if type(header_button[0]) is list:
+            buttons = header_button + buttons
+        elif type(header_button[0]) is tuple:
+            buttons.insert(0, header_button)
+
+    footer_type = type(footer_button)
+    if footer_type is tuple:
+        buttons.append([footer_button])
+    elif footer_type is list:
+        if type(footer_button[0]) is list:
+            buttons.extend(footer_button)
+        elif type(footer_button[0]) is tuple:
+            buttons.append(footer_button)
+
     return InlineKeyboardMarkup(buttons)
     # example of inline_keyboard:
     # >>> primative_button = [[('1', '1')], [('2', '2')]]
-    # >>> keyboard = inline_keyboard(primative_button)
+    # >>> keyboard = inline_keyboard(primative_button, 2)
     # >>> bot.send_message(chat_id, text, reply_markup=keyboard
 
 
@@ -127,7 +141,12 @@ product_dict = {
         'YOLO Mango',
         'YOLO Advocado',
         'YOLO Dragon Fruit'
-    ]}
+    ],
+    "Today's special": [
+        '今天的special'
+    ]
+}
+special = 'Fruits BOOM'
 # ---------Price--------- #
 price_dict = {
     'Black Sugar Fresh Milk': 13,
